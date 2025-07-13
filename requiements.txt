@@ -1,0 +1,5 @@
+Flask==2.3.2 # Or your installed Flask version, check with pip show Flask
+Flask-Cors==4.0.0 # Or your installed Flask-Cors version
+cryptography==41.0.3 # Or your installed cryptography version
+PyJWT==2.8.0 # Or your installed PyJWT version
+gunicorn==21.2.0 # Essential for running Flask in production
