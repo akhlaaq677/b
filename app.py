@@ -192,6 +192,8 @@ def serve(path):
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
+init_db()
+
 if __name__ == '__main__':
     init_db()
     app.run(threaded=True)
