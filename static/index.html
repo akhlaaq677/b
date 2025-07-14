@@ -10,11 +10,12 @@
     <div id="app">
         <header>
             <nav>
-                <div class="logo">SecureVault</div>
+                <div class="logo">SecureVault Pro</div>
                 <div class="nav-links">
-                    <a href="#" class="nav-link" @click="showPage('home')">Home</a>
-                    <a href="#" class="nav-link" @click="showPage('about')">About</a>
-                    <a href="#" class="nav-link" @click="showPage('contact')">Contact</a>
+                    <a href="#home" class="nav-link" @click="showPage('home')">Home</a>
+                    <a href="#about" class="nav-link" @click="showPage('about')">About</a>
+                    <a href="#contact" class="nav-link" @click="showPage('contact')">Contact</a>
+                    <a v-if="isAuthenticated" href="#dashboard" class="nav-link" @click="showPage('dashboard')">Dashboard</a>
                 </div>
                 <div class="auth-buttons" v-if="!isAuthenticated">
                     <button class="btn btn-outline" @click="showPage('login')">Login</button>
@@ -149,26 +150,33 @@
             <div class="page" :class="{active: currentPage === 'dashboard'}">
                 <div class="dashboard">
                     <div class="sidebar">
-                        <a href="#" class="sidebar-link active">Encrypt/Decrypt</a>
-                        </div>
+                        <a href="#dashboard" class="sidebar-link active" @click="showPage('dashboard')">Encrypt/Decrypt</a>
+                    </div>
                     <div class="content-area">
                         <h2>File Encryption/Decryption</h2>
-                        <div v-if="message" class="alert" :class="messageClass">
+                        <div v-if="message" class="alert" :class="messageClass" aria-live="polite">
                             {{ message }}
                             <button v-if="message" class="close-alert" @click="clearMessage">×</button>
                         </div>
                         
-                        <div class="file-uploader" @click="triggerFileInput" 
-                             @dragover.prevent @drop="handleFileDrop"
+                        <div class="file-uploader" tabindex="0" @click="triggerFileInput" 
+                             @dragover.prevent
+                             @dragenter="isDragging = true"
+                             @dragleave="isDragging = false"
+                             @drop="handleFileDrop"
                              :class="{'drag-over': isDragging}">
                             <p v-if="!selectedFile">Click to select a file or drag and drop</p>
-                            <p v-else>{{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})</p>
-                            <input type="file" ref="fileInput" style="display: none;" @change="handleFileSelect">
+                            <p v-else>
+                                {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})
+                                <button class="btn btn-outline" style="margin-left:1rem; padding:0.2rem 0.5rem; font-size:0.9em;"
+                                        @click.stop="selectedFile = null; $refs.fileInput.value = null;">Clear</button>
+                            </p>
+                            <input type="file" ref="fileInput" style="display: none;" @change="handleFileSelect" aria-label="File input">
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Encryption/Decryption Key</label>
-                            <input type="password" class="form-control" v-model="cryptoKey" autocomplete="new-password">
+                            <input type="password" class="form-control" v-model="cryptoKey" autocomplete="off">
                         </div>
                         
                         <div style="display: flex; gap: 1rem;">

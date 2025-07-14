@@ -40,9 +40,19 @@ createApp({
             currentPage.value = 'dashboard'; // Go to dashboard if already authenticated
         }
 
+        // Add hash-based routing logic at the top of setup()
+        if (window.location.hash) {
+            currentPage.value = window.location.hash.replace('#', '');
+        }
+        window.addEventListener('hashchange', () => {
+            const page = window.location.hash.replace('#', '');
+            if (page) currentPage.value = page;
+        });
+
         function showPage(page) {
             currentPage.value = page;
-            clearMessage(); // Clear message when changing page
+            window.location.hash = page;
+            clearMessage();
             // Clear auth form fields when navigating to login/register
             if (page === 'login' || page === 'register') {
                 auth.value.username = '';
