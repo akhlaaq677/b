@@ -167,21 +167,45 @@ def decrypt():
 @app.route('/api/contact', methods=['POST'])
 def contact():
     data = request.get_json()
-    name = data.get('name')
-    email = data.get('email')
-    message = data.get('message')
-    
+    name = (data.get('name') or '').strip()
+    email = (data.get('email') or '').strip()
+    message = (data.get('message') or '').strip()
+
     if not all([name, email, message]):
         return jsonify({'error': 'All fields required'}), 400
-    
+
+    if len(message) > 1000:
+        return jsonify({'error': 'Message too long'}), 400
+
+    import re
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return jsonify({'error': 'Invalid email address'}), 400
+
     try:
         with sqlite3.connect(DATABASE) as conn:
             conn.execute('INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)',
                          (name, email, message))
             conn.commit()
-        return jsonify({'success': True})
+        return jsonify({'success': True, 'message': 'Thank you for contacting us!'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/contacts', methods=['GET'])
+def get_contacts():
+    # Optionally, add authentication here for security!
+    with sqlite3.connect(DATABASE) as conn:
+        rows = conn.execute('SELECT id, name, email, message, created_at FROM contacts ORDER BY created_at DESC').fetchall()
+        contacts = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'message': row[3],
+                'created_at': row[4]
+            }
+            for row in rows
+        ]
+    return jsonify({'contacts': contacts})
 
 # Serve frontend
 @app.route('/', defaults={'path': ''})
